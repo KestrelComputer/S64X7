@@ -30,4 +30,6 @@
 `define N_AND       4'b0111
 `define N_SUB       4'b1000
 `define N_SRA       4'b1001
+`define N_SGE       4'b1010
+`define N_SGEU      4'b1011
 
