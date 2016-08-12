@@ -361,6 +361,161 @@ module S64X7(
         endcase
       end
 
+      `OPC_INTOPS: begin
+        case(dr[3:0])
+        `N_ADD: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+          nz <= y + z;
+          ndr <= dr >> 4;
+        end
+        `N_SUB: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+          nz <= y - z;
+          ndr <= dr >> 4;
+        end
+        `N_SLL: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+          nz <= y << z;
+          ndr <= dr >> 4;
+        end
+        `N_SLT: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+	  nz <= $signed(y) < $signed(z);
+          ndr <= dr >> 4;
+        end
+        `N_SLTU: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+	  nz <= $unsigned(y) < $unsigned(z);
+          ndr <= dr >> 4;
+        end
+        `N_XOR: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+          nz <= y ^ z;
+          ndr <= dr >> 4;
+        end
+        `N_SRL: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+          nz <= $unsigned(y) >> $unsigned(z);
+          ndr <= dr >> 4;
+        end
+        `N_SRA: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+          nz <= $signed(y) >> $signed(z);
+          ndr <= dr >> 4;
+        end
+        `N_OR: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+	  nz <= y | z;
+          ndr <= dr >> 4;
+        end
+        `N_AND: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+	  nz <= y & z;
+          ndr <= dr >> 4;
+        end
+        endcase
+      end
+
       default: begin
         adr_o <= 0;
         cyc_o <= 0;
