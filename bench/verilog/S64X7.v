@@ -253,6 +253,9 @@ module test_S64X7();
     assert_sel_o(8'b11111111);
     assert_we_o(1);
     assert_dat_o(expected);
+
+    start(story+5);  // Now fetching next instruction
+    tick();
   end
   endtask
 
@@ -345,37 +348,48 @@ module test_S64X7();
     //
     // 61161400300f0211
     //
-    //         STORY       FN      IN_A   IN_B   EXPECTED RESULT
+    //         STORY       FN       IN_A   IN_B   EXPECTED RESULT
     //
-    test_intop(24'h000900, `N_ADD, 8'h11, 8'h02, 64'h0000_0000_0000_0013);
-    test_instr_fetch(24'h000900, 64'hE000_0000_0000_00A8);
-
-    test_intop(24'h000A00, `N_SUB, 8'h11, 8'h02, 64'h0000_0000_0000_000F);
-    test_instr_fetch(24'h000A00, 64'hE000_0000_0000_00B0);
-
-    test_intop(24'h000B00, `N_SLL, 8'h11, 8'h02, 64'h0000_0000_0000_0044);
-    test_instr_fetch(24'h000B00, 64'hE000_0000_0000_00B8);
-
-    test_intop(24'h000C00, `N_SLT, 8'h11, 8'h02, 64'h0000_0000_0000_0000);
-    test_instr_fetch(24'h000C00, 64'hE000_0000_0000_00C0);
-
-    test_intop(24'h000D00, `N_SLTU, 8'h11, 8'h02, 64'h0000_0000_0000_0000);
-    test_instr_fetch(24'h000D00, 64'hE000_0000_0000_00C8);
-
-    test_intop(24'h000E00, `N_XOR, 8'h11, 8'h02, 64'h0000_0000_0000_0013);
-    test_instr_fetch(24'h000E00, 64'hE000_0000_0000_00D0);
-
-    test_intop(24'h000F00, `N_SRL, 8'h11, 8'h02, 64'h0000_0000_0000_0004);
-    test_instr_fetch(24'h000F00, 64'hE000_0000_0000_00D8);
-
-    test_intop(24'h001000, `N_SRA, 8'h11, 8'h02, 64'h0000_0000_0000_0004);
-    test_instr_fetch(24'h001000, 64'hE000_0000_0000_00E0);
-
-    test_intop(24'h001100, `N_OR, 8'h11, 8'h02, 64'h0000_0000_0000_0013);
-    test_instr_fetch(24'h001100, 64'hE000_0000_0000_00E8);
-
-    test_intop(24'h001200, `N_AND, 8'h11, 8'h02, 64'h0000_0000_0000_0000);
-    test_instr_fetch(24'h001200, 64'hE000_0000_0000_00F0);
+    test_intop(24'h000900, `N_ADD,  8'h11, 8'h02, 64'h0000_0000_0000_0013);
+    test_intop(24'h000A00, `N_SUB,  8'h11, 8'h02, 64'h0000_0000_0000_000F);
+    test_intop(24'h000B00, `N_SLL,  8'h11, 8'h02, 64'h0000_0000_0000_0044);
+    test_intop(24'h000C00, `N_SLTU, 8'h00, 8'h00, 64'd0);
+    test_intop(24'h000C10, `N_SLTU, 8'h00, 8'h01, 64'd1);
+    test_intop(24'h000C20, `N_SLTU, 8'h00, 8'hFE, 64'd1);
+    test_intop(24'h000C30, `N_SLTU, 8'h00, 8'hFF, 64'd1);
+    test_intop(24'h000C40, `N_SLTU, 8'h01, 8'h00, 64'd0);
+    test_intop(24'h000C50, `N_SLTU, 8'h01, 8'h01, 64'd0);
+    test_intop(24'h000C60, `N_SLTU, 8'h01, 8'hFE, 64'd1);
+    test_intop(24'h000C70, `N_SLTU, 8'h01, 8'hFF, 64'd1);
+    test_intop(24'h000C80, `N_SLTU, 8'hFE, 8'h00, 64'd0);
+    test_intop(24'h000C90, `N_SLTU, 8'hFE, 8'h01, 64'd0);
+    test_intop(24'h000CA0, `N_SLTU, 8'hFE, 8'hFE, 64'd0);
+    test_intop(24'h000CB0, `N_SLTU, 8'hFE, 8'hFF, 64'd1);
+    test_intop(24'h000CC0, `N_SLTU, 8'hFF, 8'h00, 64'd0);
+    test_intop(24'h000CD0, `N_SLTU, 8'hFF, 8'h01, 64'd0);
+    test_intop(24'h000CE0, `N_SLTU, 8'hFF, 8'hFE, 64'd0);
+    test_intop(24'h000CF0, `N_SLTU, 8'hFF, 8'hFF, 64'd0);
+    test_intop(24'h000D00, `N_SLT,  8'h00, 8'h00, 64'd0);
+    test_intop(24'h000D10, `N_SLT,  8'h00, 8'h01, 64'd1);
+    test_intop(24'h000D20, `N_SLT,  8'h00, 8'hFE, 64'd0);
+    test_intop(24'h000D30, `N_SLT,  8'h00, 8'hFF, 64'd0);
+    test_intop(24'h000D40, `N_SLT,  8'h01, 8'h00, 64'd0);
+    test_intop(24'h000D50, `N_SLT,  8'h01, 8'h01, 64'd0);
+    test_intop(24'h000D60, `N_SLT,  8'h01, 8'hFE, 64'd0);
+    test_intop(24'h000D70, `N_SLT,  8'h01, 8'hFF, 64'd0);
+    test_intop(24'h000D80, `N_SLT,  8'hFE, 8'h00, 64'd1);
+    test_intop(24'h000D90, `N_SLT,  8'hFE, 8'h01, 64'd1);
+    test_intop(24'h000DA0, `N_SLT,  8'hFE, 8'hFE, 64'd0);
+    test_intop(24'h000DB0, `N_SLT,  8'hFE, 8'hFF, 64'd1);
+    test_intop(24'h000DC0, `N_SLT,  8'hFF, 8'h00, 64'd1);
+    test_intop(24'h000DD0, `N_SLT,  8'hFF, 8'h01, 64'd1);
+    test_intop(24'h000DE0, `N_SLT,  8'hFF, 8'hFE, 64'd0);
+    test_intop(24'h000DF0, `N_SLT,  8'hFF, 8'hFF, 64'd0);
+    test_intop(24'h000E00, `N_XOR,  8'hAA, 8'hA5, 64'h0000_0000_0000_000F);
+    test_intop(24'h000F00, `N_SRL,  8'h11, 8'h02, 64'h0000_0000_0000_0004);
+    test_intop(24'h001000, `N_SRA,  8'h11, 8'h02, 64'h0000_0000_0000_0004);
+    test_intop(24'h001100, `N_OR,   8'hAA, 8'hA5, 64'hFFFF_FFFF_FFFF_FFAF);
+    test_intop(24'h001200, `N_AND,  8'hAA, 8'hA5, 64'hFFFF_FFFF_FFFF_FFA0);
 
     $display("@I Done.");
     $stop;

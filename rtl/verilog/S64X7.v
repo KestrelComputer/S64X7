@@ -129,7 +129,7 @@ module S64X7(
 
         nx <= y;
         ny <= z;
-        nz <= {{52{dr[7]}}, dr[7:0]};
+        nz <= {{56{dr[7]}}, dr[7:0]};
         ndr <= dr >> 8;
       end
 
