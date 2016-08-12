@@ -215,10 +215,12 @@ module test_S64X7();
   task test_intop;
   input [23:0] story;
   input [3:0] fn;
+  input [7:0] in_a;
+  input [7:0] in_b;
   input [63:0] expected;
   begin
     start(story);
-    dat_o <= {44'h61161400300, fn, 16'h0211};
+    dat_o <= {44'h61161400300, fn, in_b, in_a};
     tick();             // Now executing LIT8
     assert_opcode(`OPC_LIT8);
     assert_cyc_o(0);
@@ -343,36 +345,36 @@ module test_S64X7();
     //
     // 61161400300f0211
     //
-    //         STORY       FN      EXPECTED RESULT
+    //         STORY       FN      IN_A   IN_B   EXPECTED RESULT
     //
-    test_intop(24'h000900, `N_ADD, 64'h0000_0000_0000_0013);
+    test_intop(24'h000900, `N_ADD, 8'h11, 8'h02, 64'h0000_0000_0000_0013);
     test_instr_fetch(24'h000900, 64'hE000_0000_0000_00A8);
 
-    test_intop(24'h000A00, `N_SUB, 64'h0000_0000_0000_000F);
+    test_intop(24'h000A00, `N_SUB, 8'h11, 8'h02, 64'h0000_0000_0000_000F);
     test_instr_fetch(24'h000A00, 64'hE000_0000_0000_00B0);
 
-    test_intop(24'h000B00, `N_SLL, 64'h0000_0000_0000_0044);
+    test_intop(24'h000B00, `N_SLL, 8'h11, 8'h02, 64'h0000_0000_0000_0044);
     test_instr_fetch(24'h000B00, 64'hE000_0000_0000_00B8);
 
-    test_intop(24'h000C00, `N_SLT, 64'h0000_0000_0000_0000);
+    test_intop(24'h000C00, `N_SLT, 8'h11, 8'h02, 64'h0000_0000_0000_0000);
     test_instr_fetch(24'h000C00, 64'hE000_0000_0000_00C0);
 
-    test_intop(24'h000D00, `N_SLTU, 64'h0000_0000_0000_0000);
+    test_intop(24'h000D00, `N_SLTU, 8'h11, 8'h02, 64'h0000_0000_0000_0000);
     test_instr_fetch(24'h000D00, 64'hE000_0000_0000_00C8);
 
-    test_intop(24'h000E00, `N_XOR, 64'h0000_0000_0000_0013);
+    test_intop(24'h000E00, `N_XOR, 8'h11, 8'h02, 64'h0000_0000_0000_0013);
     test_instr_fetch(24'h000E00, 64'hE000_0000_0000_00D0);
 
-    test_intop(24'h000F00, `N_SRL, 64'h0000_0000_0000_0004);
+    test_intop(24'h000F00, `N_SRL, 8'h11, 8'h02, 64'h0000_0000_0000_0004);
     test_instr_fetch(24'h000F00, 64'hE000_0000_0000_00D8);
 
-    test_intop(24'h001000, `N_SRA, 64'h0000_0000_0000_0004);
+    test_intop(24'h001000, `N_SRA, 8'h11, 8'h02, 64'h0000_0000_0000_0004);
     test_instr_fetch(24'h001000, 64'hE000_0000_0000_00E0);
 
-    test_intop(24'h001100, `N_OR, 64'h0000_0000_0000_0013);
+    test_intop(24'h001100, `N_OR, 8'h11, 8'h02, 64'h0000_0000_0000_0013);
     test_instr_fetch(24'h001100, 64'hE000_0000_0000_00E8);
 
-    test_intop(24'h001200, `N_AND, 64'h0000_0000_0000_0000);
+    test_intop(24'h001200, `N_AND, 8'h11, 8'h02, 64'h0000_0000_0000_0000);
     test_instr_fetch(24'h001200, 64'hE000_0000_0000_00F0);
 
     $display("@I Done.");
