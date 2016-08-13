@@ -7,6 +7,7 @@
 `define OPC_INTOPS  4'b0110
 `define OPC_JUMPS   4'b0111
 `define OPC_RET     4'b1000
+`define OPC_STKOPS  4'b1001
 
 `define N_SBM       4'b0000
 `define N_SHM       4'b0001
@@ -50,4 +51,12 @@
 `define N_JFI       4'b1101
 `define N_JI        4'b1110
 `define N_CALLI     4'b1111
+
+`define N_DROP      4'b0000
+`define N_DUP       4'b0001
+`define N_OVER      4'b0010
+`define N_SWAP      4'b0011
+`define N_ROT       4'b0100
+`define N_PUSH      4'b0101
+`define N_POP       4'b0110
 

@@ -1677,6 +1677,75 @@ module S64X7(
         rsh_en <= 0;
       end
 
+      `OPC_STKOPS: begin
+        case(dr[3:0])
+        `N_DROP: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          nia <= ia;
+          np <= p;
+          nt <= t+1;
+
+          dpush <= 0;
+          dpop <= 1;
+          dpop2 <= 0;
+          nx <= ds0;
+          ny <= x;
+          nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
+          ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
+        end
+        `N_DUP: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          nia <= ia;
+          np <= p;
+          nt <= t+1;
+
+          dpush <= 1;
+          dpop <= 0;
+          dpop2 <= 0;
+          nx <= y;
+          ny <= z;
+          nz <= z;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
+          ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
+        end
+        endcase
+      end
+
       default: begin
         adr_o <= 0;
         cyc_o <= 0;
@@ -1714,7 +1783,7 @@ module S64X7(
     endcase
   end
 
-// always @(posedge clk_i) begin #5 $display("CLK=%d T=%d O=%4b DI=%016X DO=%016X ADR=%016X IIF=%d IR=%016X DR=%016X", clk_i, t, opcode, dat_i, dat_o, adr_o, is_instr_fetch, ir, dr); end
+always @(posedge clk_i) begin #5 $display("CLK=%d T=%d O=%4b DI=%016X DO=%016X ADR=%016X IIF=%d IR=%016X DR=%016X", clk_i, t, opcode, dat_i, dat_o, adr_o, is_instr_fetch, ir, dr); end
 
   always @(posedge clk_i) begin
     t <= nt;

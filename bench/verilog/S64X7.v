@@ -325,6 +325,45 @@ module test_S64X7();
   end
   endtask
 
+  task test_stackop;
+  input [23:0] story;
+  input [3:0] fn;
+  input [63:0] exp1, exp2, exp3;
+  begin
+    start(story);
+    dat_o <= {36'h6111_9100_0, fn, 24'h03_0201};
+    $display("%016X", {36'h6111_9100_0, fn, 24'h03_0201});
+    tick();             // Now executing LIT8
+    tick();             // Now executing LIT8
+    tick();             // Now executing LIT8
+    tick();             // Now executing STKOP
+    tick();             // Now executing LIT8
+    tick();             // Now fetching
+    assert_vpa_o(1);
+
+    start(story+1);
+    dat_o <= 64'h6414_1400_0300_3003;
+    tick();		// Now executing SDM
+    assert_opcode(4);
+    assert_we_o(1);
+    assert_dat_o(exp1);
+
+    start(story+2);
+    tick();		// LIT8
+    tick();		// SDM
+    assert_dat_o(exp2);
+
+    start(story+3);
+    tick();		// LIT8
+    tick();		// SDM
+    assert_dat_o(exp3);
+
+    start(story+4);
+    tick();		// Fetch
+    assert_vpa_o(1);
+  end
+  endtask
+
   task test_instr_fetch;
   input [23:0] story;
   input [63:0] expected;
@@ -511,8 +550,8 @@ module test_S64X7();
     test_ji(24'h004200, `N_JI,     16'h4020, 64'h0000_0000_0000_0048);
     test_ji(24'h004300, `N_CALLI,  16'h4020, 64'h0000_0000_0000_0048);
 
-    // CALL8	*+8
-		// RET
+    // CALL8  *+8
+    // RET
 
     start(24'h005000);
     reset_o <= 1;
@@ -531,6 +570,22 @@ module test_S64X7();
     tick();
 
     test_instr_fetch(24'h005004, 64'hE000_0000_0000_0008);
+
+    // Stack Permutations.
+    //
+    //  LIT8  1
+    //  LIT8  2
+    //  LIT8  3
+    //  DUP/OVER/SWAP/ROT/PUSH/POP
+    //  LIT8  0
+    //
+    //  SDM
+    //  LIT8  0
+    //  SDM
+    //  LIT8  0
+    //  SDM
+
+    test_stackop(24'h006000, `N_DUP, 3, 3, 2);
 
     $display("@I Done.");
     $stop;
