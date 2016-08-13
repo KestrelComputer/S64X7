@@ -13,8 +13,8 @@ module stack8(
     output  [63:0]  dat0_o,
     output  [63:0]  dat1_o
 );
-  reg [63:0] a, b, c, d, e, f, g, h;
-  reg [63:0] na, nb, nc, nd, ne, nf, ng, nh;
+  reg [63:0] a, b, c, d;
+  reg [63:0] na, nb, nc, nd;
 
   assign dat0_o = a;
   assign dat1_o = b;
@@ -25,40 +25,24 @@ module stack8(
       nb <= a;
       nc <= b;
       nd <= c;
-      ne <= d;
-      nf <= e;
-      ng <= f;
-      nh <= g;
     end
     else if(pop_en_i) begin
       na <= b;
       nb <= c;
       nc <= d;
-      nd <= e;
-      ne <= f;
-      nf <= g;
-      ng <= h;
-      nh <= h;
+      nd <= d;
     end
     else if(pop2_en_i) begin
       na <= c;
       nb <= d;
-      nc <= e;
-      nd <= f;
-      ne <= g;
-      nf <= h;
-      ng <= h;
-      nh <= h;
+      nc <= d;
+      nd <= d;
     end
     else begin
       na <= a;
       nb <= b;
       nc <= c;
       nd <= d;
-      ne <= e;
-      nf <= f;
-      ng <= g;
-      nh <= h;
     end
   end
 
@@ -67,10 +51,6 @@ module stack8(
     b <= nb;
     c <= nc;
     d <= nd;
-    e <= ne;
-    f <= nf;
-    g <= ng;
-    h <= nh;
   end
 endmodule
 
@@ -90,6 +70,8 @@ module S64X7(
     output  [3:0]   opc_o,
     output  [63:0]  dat_o
 );
+  wire [3:0] opc_o;
+
   reg [63:3]  adr_o;
   reg         cyc_o, we_o, vpa_o;
   reg [7:0]   sel_o;
@@ -126,6 +108,27 @@ module S64X7(
     .dat_i(rz),
     .dat0_o(rs0)
     // .dat1_o(rs1) unused
+  );
+
+  reg cflag_1, sum_en, and_en, xor_en, invB_en, lsh_en, rsh_en;
+  wire [63:0] alu_out;
+  wire alu_zflag, alu_vflag, alu_cflag;
+
+  alu alu(
+    .inA_i(y),
+    .inB_i(z),
+    .cflag_i(cflag_1),
+    .sum_en_i(sum_en),
+    .and_en_i(and_en),
+    .xor_en_i(xor_en),
+    .invB_en_i(invB_en),
+    .lsh_en_i(lsh_en),
+    .rsh_en_i(rsh_en),
+
+    .zflag_o(alu_zflag),
+    .vflag_o(alu_vflag),
+    .cflag_o(alu_cflag),
+    .out_o(alu_out)
   );
 
   wire [7:0] byte_in =
@@ -190,6 +193,14 @@ module S64X7(
       nrz <= rz;
 
       ndr <= dr;
+
+      cflag_1 <= 0;
+      sum_en <= 0;
+      and_en <= 0;
+      xor_en <= 0;
+      invB_en <= 0;
+      lsh_en <= 0;
+      rsh_en <= 0;
     end
     2'b01: begin
       adr_o <= p;
@@ -205,6 +216,7 @@ module S64X7(
 
       dpush <= 0;
       dpop <= 0;
+      dpop2 <= 0;
       nx <= x;
       ny <= y;
       nz <= z;
@@ -214,6 +226,14 @@ module S64X7(
       nrz <= rz;
 
       ndr <= dr;
+
+      cflag_1 <= 0;
+      sum_en <= 0;
+      and_en <= 0;
+      xor_en <= 0;
+      invB_en <= 0;
+      lsh_en <= 0;
+      rsh_en <= 0;
     end
     2'b00: begin
       case(opcode)
@@ -231,6 +251,7 @@ module S64X7(
 
         dpush <= 0;
         dpop <= 0;
+        dpop2 <= 0;
         nx <= x;
         ny <= y;
         nz <= z;
@@ -240,6 +261,14 @@ module S64X7(
         nrz <= rz;
 
         ndr <= dr;
+
+        cflag_1 <= 0;
+        sum_en <= 0;
+        and_en <= 0;
+        xor_en <= 0;
+        invB_en <= 0;
+        lsh_en <= 0;
+        rsh_en <= 0;
       end
 
       `OPC_LIT8: begin
@@ -256,6 +285,7 @@ module S64X7(
 
         dpush <= 1;
         dpop <= 0;
+        dpop2 <= 0;
         nx <= y;
         ny <= z;
         nz <= {{56{dr[7]}}, dr[7:0]};
@@ -265,6 +295,14 @@ module S64X7(
         nrz <= rz;
 
         ndr <= dr >> 8;
+
+        cflag_1 <= 0;
+        sum_en <= 0;
+        and_en <= 0;
+        xor_en <= 0;
+        invB_en <= 0;
+        lsh_en <= 0;
+        rsh_en <= 0;
       end
 
       `OPC_LIT16: begin
@@ -281,6 +319,7 @@ module S64X7(
 
         dpush <= 1;
         dpop <= 0;
+        dpop2 <= 0;
         nx <= y;
         ny <= z;
         nz <= {{48{dr[15]}}, dr[15:0]};
@@ -290,6 +329,14 @@ module S64X7(
         nrz <= rz;
 
         ndr <= dr >> 16;
+
+        cflag_1 <= 0;
+        sum_en <= 0;
+        and_en <= 0;
+        xor_en <= 0;
+        invB_en <= 0;
+        lsh_en <= 0;
+        rsh_en <= 0;
       end
 
       `OPC_LIT32: begin
@@ -306,6 +353,7 @@ module S64X7(
 
         dpush <= 1;
         dpop <= 0;
+        dpop2 <= 0;
         nx <= y;
         ny <= z;
         nz <= {{32{dr[31]}}, dr[31:0]};
@@ -315,6 +363,14 @@ module S64X7(
         nrz <= rz;
 
         ndr <= dr >> 32;
+
+        cflag_1 <= 0;
+        sum_en <= 0;
+        and_en <= 0;
+        xor_en <= 0;
+        invB_en <= 0;
+        lsh_en <= 0;
+        rsh_en <= 0;
       end
 
       `OPC_STORES: begin
@@ -333,6 +389,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 1;
           nx <= ds1;
           ny <= ds0;
           nz <= x;
@@ -342,6 +399,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SHM: begin
           adr_o <= z[63:3];
@@ -357,6 +422,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 1;
           nx <= ds1;
           ny <= ds0;
           nz <= x;
@@ -366,6 +432,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SWM: begin
           adr_o <= z[63:3];
@@ -381,6 +455,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 1;
           nx <= ds1;
           ny <= ds0;
           nz <= x;
@@ -390,6 +465,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SDM: begin
           adr_o <= z[63:3];
@@ -405,6 +488,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 1;
           nx <= ds1;
           ny <= ds0;
           nz <= x;
@@ -414,6 +498,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         endcase
       end
@@ -433,6 +525,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= x;
           ny <= y;
           nz <= {56'd0, byte_in};
@@ -442,6 +535,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_LHMU: begin
           adr_o <= z[63:3];
@@ -456,6 +557,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= x;
           ny <= y;
           nz <= {48'd0, hword_in};
@@ -465,6 +567,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_LWMU: begin
           adr_o <= z[63:3];
@@ -479,6 +589,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= x;
           ny <= y;
           nz <= {32'd0, word_in};
@@ -488,6 +599,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_LDMU: begin
           adr_o <= z[63:3];
@@ -502,6 +621,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= x;
           ny <= y;
           nz <= dat_i;
@@ -511,6 +631,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_LBMS: begin
           adr_o <= z[63:3];
@@ -525,6 +653,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= x;
           ny <= y;
           nz <= {{56{byte_in[7]}}, byte_in};
@@ -534,6 +663,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_LHMS: begin
           adr_o <= z[63:3];
@@ -557,6 +694,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_LWMS: begin
           adr_o <= z[63:3];
@@ -571,6 +716,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= x;
           ny <= y;
           nz <= {{32{word_in[31]}}, word_in};
@@ -580,6 +726,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_LDMS: begin
           adr_o <= z[63:3];
@@ -594,6 +748,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= x;
           ny <= y;
           nz <= dat_i;
@@ -603,6 +758,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         endcase
       end
@@ -622,15 +785,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= y + z;
+          nz <= alu_out;
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 1;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SUB: begin
           adr_o <= 0;
@@ -645,15 +817,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= y - z;
+          nz <= alu_out;
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 1;
+          sum_en <= 1;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 1;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SLL: begin
           adr_o <= 0;
@@ -668,15 +849,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= y << z;
+          nz <= alu_out;
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 1;
+          rsh_en <= 0;
         end
         `N_SLT: begin
           adr_o <= 0;
@@ -691,15 +881,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= $signed(y) < $signed(z);
+          nz <= {63'd0, alu_out[63] ^ alu_vflag};
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 1;
+          sum_en <= 1;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 1;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SLTU: begin
           adr_o <= 0;
@@ -714,15 +913,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= $unsigned(y) < $unsigned(z);
+          nz <= {63'd0, ~alu_cflag};
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 1;
+          sum_en <= 1;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 1;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SGE: begin
           adr_o <= 0;
@@ -737,15 +945,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= $signed(y) >= $signed(z);
+          nz <= {63'd0, ~(alu_out[63] ^ alu_vflag)};
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 1;
+          sum_en <= 1;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 1;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SGEU: begin
           adr_o <= 0;
@@ -760,15 +977,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= $unsigned(y) >= $unsigned(z);
+          nz <= {63'd0, alu_cflag};
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 1;
+          sum_en <= 1;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 1;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SEQ: begin
           adr_o <= 0;
@@ -783,15 +1009,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= y == z;
+          nz <= {63'd0, alu_zflag};
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 1;
+          sum_en <= 1;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 1;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SNE: begin
           adr_o <= 0;
@@ -806,15 +1041,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= y != z;
+          nz <= {63'd0, ~alu_zflag};
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 1;
+          sum_en <= 1;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 1;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_XOR: begin
           adr_o <= 0;
@@ -829,15 +1073,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= y ^ z;
+          nz <= alu_out;
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 1;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_SRL: begin
           adr_o <= 0;
@@ -852,15 +1105,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= $unsigned(y) >> $unsigned(z);
+          nz <= alu_out;
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 1;
         end
         `N_SRA: begin
           adr_o <= 0;
@@ -875,15 +1137,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= $signed(y) >> $signed(z);
+          nz <= alu_out;
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 1;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 1;
         end
         `N_OR: begin
           adr_o <= 0;
@@ -898,15 +1169,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= y | z;
+          nz <= alu_out;
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 1;
+          xor_en <= 1;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_AND: begin
           adr_o <= 0;
@@ -921,15 +1201,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= y & z;
+          nz <= alu_out;
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 1;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_BIC: begin
           adr_o <= 0;
@@ -944,15 +1233,24 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
-          nz <= y & ~z;
+          nz <= alu_out;
 
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 1;
+          xor_en <= 0;
+          invB_en <= 1;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         endcase
       end
@@ -972,6 +1270,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
           nz <= y;
@@ -981,6 +1280,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 12;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_JF8: begin
           adr_o <= 0;
@@ -995,6 +1302,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
           nz <= y;
@@ -1004,6 +1312,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 12;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_J8: begin
           adr_o <= 0;
@@ -1018,6 +1334,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
           nz <= y;
@@ -1027,6 +1344,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 12;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_CALL8: begin
           adr_o <= 0;
@@ -1041,6 +1366,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
           nz <= y;
@@ -1050,6 +1376,14 @@ module S64X7(
           nrz <= {p, 3'b000};
 
           ndr <= dr >> 12;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_JT16: begin
           adr_o <= 0;
@@ -1064,6 +1398,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
           nz <= y;
@@ -1073,6 +1408,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 20;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_JF16: begin
           adr_o <= 0;
@@ -1087,6 +1430,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
           nz <= y;
@@ -1096,6 +1440,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 20;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_J16: begin
           adr_o <= 0;
@@ -1110,6 +1462,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
           nz <= y;
@@ -1119,6 +1472,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 20;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_CALL16: begin
           adr_o <= 0;
@@ -1133,6 +1494,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 1;
+          dpop2 <= 0;
           nx <= ds0;
           ny <= x;
           nz <= y;
@@ -1142,6 +1504,14 @@ module S64X7(
           nrz <= {p, 3'b000};
 
           ndr <= dr >> 20;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_JTI: begin
           adr_o <= 0;
@@ -1156,6 +1526,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= ds1;
           ny <= ds0;
           nz <= x;
@@ -1165,6 +1536,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_JFI: begin
           adr_o <= 0;
@@ -1179,6 +1558,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= ds1;
           ny <= ds0;
           nz <= y;
@@ -1188,6 +1568,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_JI: begin
           adr_o <= 0;
@@ -1202,6 +1590,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= ds1;
           ny <= ds0;
           nz <= y;
@@ -1211,6 +1600,14 @@ module S64X7(
           nrz <= rz;
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         `N_CALLI: begin
           adr_o <= 0;
@@ -1225,6 +1622,7 @@ module S64X7(
 
           dpush <= 0;
           dpop <= 0;
+          dpop2 <= 0;
           nx <= ds1;
           ny <= ds0;
           nz <= y;
@@ -1234,6 +1632,14 @@ module S64X7(
           nrz <= {p, 3'b000};
 
           ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
         end
         endcase
       end
@@ -1261,6 +1667,14 @@ module S64X7(
         nrz <= rs0;
 
         ndr <= dr;
+
+        cflag_1 <= 0;
+        sum_en <= 0;
+        and_en <= 0;
+        xor_en <= 0;
+        invB_en <= 0;
+        lsh_en <= 0;
+        rsh_en <= 0;
       end
 
       default: begin
@@ -1276,6 +1690,7 @@ module S64X7(
 
         dpush <= 0;
         dpop <= 0;
+        dpop2 <= 0;
         nx <= x;
         ny <= y;
         nz <= z;
@@ -1285,6 +1700,14 @@ module S64X7(
         nrz <= rz;
 
         ndr <= dr;
+
+        cflag_1 <= 0;
+        sum_en <= 0;
+        and_en <= 0;
+        xor_en <= 0;
+        invB_en <= 0;
+        lsh_en <= 0;
+        rsh_en <= 0;
       end
       endcase
     end
