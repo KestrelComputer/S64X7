@@ -212,7 +212,7 @@ module test_S64X7();
   end
   endtask
 
-  task test_intop;
+  task test_intop2;
   input [23:0] story;
   input [3:0] fn;
   input [7:0] in_a;
@@ -342,86 +342,89 @@ module test_S64X7();
 
     // LIT8   $11
     // LIT8   $02
-    // ADD/SUB/SLL/SLT/SLTU/XOR/SRA/SRL/OR/AND
+    // ADD/SUB/SLL/SLT/SLTU/SGE/SGEU/XOR/SRA/SRL/OR/AND
     // LIT8   $00
     // SDM
     //
-    // 61161400300f0211
+    //          STORY       FN       IN_A   IN_B   EXPECTED RESULT
     //
-    //         STORY       FN       IN_A   IN_B   EXPECTED RESULT
-    //
-    test_intop(24'h000900, `N_ADD,  8'h11, 8'h02, 64'h0000_0000_0000_0013);
-    test_intop(24'h000A00, `N_SUB,  8'h11, 8'h02, 64'h0000_0000_0000_000F);
-    test_intop(24'h000B00, `N_SLL,  8'h11, 8'h02, 64'h0000_0000_0000_0044);
-    test_intop(24'h000C00, `N_SLTU, 8'h00, 8'h00, 64'd0);
-    test_intop(24'h000C10, `N_SLTU, 8'h00, 8'h01, 64'd1);
-    test_intop(24'h000C20, `N_SLTU, 8'h00, 8'hFE, 64'd1);
-    test_intop(24'h000C30, `N_SLTU, 8'h00, 8'hFF, 64'd1);
-    test_intop(24'h000C40, `N_SLTU, 8'h01, 8'h00, 64'd0);
-    test_intop(24'h000C50, `N_SLTU, 8'h01, 8'h01, 64'd0);
-    test_intop(24'h000C60, `N_SLTU, 8'h01, 8'hFE, 64'd1);
-    test_intop(24'h000C70, `N_SLTU, 8'h01, 8'hFF, 64'd1);
-    test_intop(24'h000C80, `N_SLTU, 8'hFE, 8'h00, 64'd0);
-    test_intop(24'h000C90, `N_SLTU, 8'hFE, 8'h01, 64'd0);
-    test_intop(24'h000CA0, `N_SLTU, 8'hFE, 8'hFE, 64'd0);
-    test_intop(24'h000CB0, `N_SLTU, 8'hFE, 8'hFF, 64'd1);
-    test_intop(24'h000CC0, `N_SLTU, 8'hFF, 8'h00, 64'd0);
-    test_intop(24'h000CD0, `N_SLTU, 8'hFF, 8'h01, 64'd0);
-    test_intop(24'h000CE0, `N_SLTU, 8'hFF, 8'hFE, 64'd0);
-    test_intop(24'h000CF0, `N_SLTU, 8'hFF, 8'hFF, 64'd0);
-    test_intop(24'h000D00, `N_SLT,  8'h00, 8'h00, 64'd0);
-    test_intop(24'h000D10, `N_SLT,  8'h00, 8'h01, 64'd1);
-    test_intop(24'h000D20, `N_SLT,  8'h00, 8'hFE, 64'd0);
-    test_intop(24'h000D30, `N_SLT,  8'h00, 8'hFF, 64'd0);
-    test_intop(24'h000D40, `N_SLT,  8'h01, 8'h00, 64'd0);
-    test_intop(24'h000D50, `N_SLT,  8'h01, 8'h01, 64'd0);
-    test_intop(24'h000D60, `N_SLT,  8'h01, 8'hFE, 64'd0);
-    test_intop(24'h000D70, `N_SLT,  8'h01, 8'hFF, 64'd0);
-    test_intop(24'h000D80, `N_SLT,  8'hFE, 8'h00, 64'd1);
-    test_intop(24'h000D90, `N_SLT,  8'hFE, 8'h01, 64'd1);
-    test_intop(24'h000DA0, `N_SLT,  8'hFE, 8'hFE, 64'd0);
-    test_intop(24'h000DB0, `N_SLT,  8'hFE, 8'hFF, 64'd1);
-    test_intop(24'h000DC0, `N_SLT,  8'hFF, 8'h00, 64'd1);
-    test_intop(24'h000DD0, `N_SLT,  8'hFF, 8'h01, 64'd1);
-    test_intop(24'h000DE0, `N_SLT,  8'hFF, 8'hFE, 64'd0);
-    test_intop(24'h000DF0, `N_SLT,  8'hFF, 8'hFF, 64'd0);
-    test_intop(24'h001C00, `N_SGEU, 8'h00, 8'h00, 64'd1);
-    test_intop(24'h001C10, `N_SGEU, 8'h00, 8'h01, 64'd0);
-    test_intop(24'h001C20, `N_SGEU, 8'h00, 8'hFE, 64'd0);
-    test_intop(24'h001C30, `N_SGEU, 8'h00, 8'hFF, 64'd0);
-    test_intop(24'h001C40, `N_SGEU, 8'h01, 8'h00, 64'd1);
-    test_intop(24'h001C50, `N_SGEU, 8'h01, 8'h01, 64'd1);
-    test_intop(24'h001C60, `N_SGEU, 8'h01, 8'hFE, 64'd0);
-    test_intop(24'h001C70, `N_SGEU, 8'h01, 8'hFF, 64'd0);
-    test_intop(24'h001C80, `N_SGEU, 8'hFE, 8'h00, 64'd1);
-    test_intop(24'h001C90, `N_SGEU, 8'hFE, 8'h01, 64'd1);
-    test_intop(24'h001CA0, `N_SGEU, 8'hFE, 8'hFE, 64'd1);
-    test_intop(24'h001CB0, `N_SGEU, 8'hFE, 8'hFF, 64'd0);
-    test_intop(24'h001CC0, `N_SGEU, 8'hFF, 8'h00, 64'd1);
-    test_intop(24'h001CD0, `N_SGEU, 8'hFF, 8'h01, 64'd1);
-    test_intop(24'h001CE0, `N_SGEU, 8'hFF, 8'hFE, 64'd1);
-    test_intop(24'h001CF0, `N_SGEU, 8'hFF, 8'hFF, 64'd1);
-    test_intop(24'h001D00, `N_SGE,  8'h00, 8'h00, 64'd1);
-    test_intop(24'h001D10, `N_SGE,  8'h00, 8'h01, 64'd0);
-    test_intop(24'h001D20, `N_SGE,  8'h00, 8'hFE, 64'd1);
-    test_intop(24'h001D30, `N_SGE,  8'h00, 8'hFF, 64'd1);
-    test_intop(24'h001D40, `N_SGE,  8'h01, 8'h00, 64'd1);
-    test_intop(24'h001D50, `N_SGE,  8'h01, 8'h01, 64'd1);
-    test_intop(24'h001D60, `N_SGE,  8'h01, 8'hFE, 64'd1);
-    test_intop(24'h001D70, `N_SGE,  8'h01, 8'hFF, 64'd1);
-    test_intop(24'h001D80, `N_SGE,  8'hFE, 8'h00, 64'd0);
-    test_intop(24'h001D90, `N_SGE,  8'hFE, 8'h01, 64'd0);
-    test_intop(24'h001DA0, `N_SGE,  8'hFE, 8'hFE, 64'd1);
-    test_intop(24'h001DB0, `N_SGE,  8'hFE, 8'hFF, 64'd0);
-    test_intop(24'h001DC0, `N_SGE,  8'hFF, 8'h00, 64'd0);
-    test_intop(24'h001DD0, `N_SGE,  8'hFF, 8'h01, 64'd0);
-    test_intop(24'h001DE0, `N_SGE,  8'hFF, 8'hFE, 64'd1);
-    test_intop(24'h001DF0, `N_SGE,  8'hFF, 8'hFF, 64'd1);
-    test_intop(24'h000E00, `N_XOR,  8'hAA, 8'hA5, 64'h0000_0000_0000_000F);
-    test_intop(24'h000F00, `N_SRL,  8'h11, 8'h02, 64'h0000_0000_0000_0004);
-    test_intop(24'h001000, `N_SRA,  8'h11, 8'h02, 64'h0000_0000_0000_0004);
-    test_intop(24'h001100, `N_OR,   8'hAA, 8'hA5, 64'hFFFF_FFFF_FFFF_FFAF);
-    test_intop(24'h001200, `N_AND,  8'hAA, 8'hA5, 64'hFFFF_FFFF_FFFF_FFA0);
+    test_intop2(24'h000900, `N_ADD,  8'h11, 8'h02, 64'h0000_0000_0000_0013);
+    test_intop2(24'h000A00, `N_SUB,  8'h11, 8'h02, 64'h0000_0000_0000_000F);
+    test_intop2(24'h000B00, `N_SLL,  8'h11, 8'h02, 64'h0000_0000_0000_0044);
+    test_intop2(24'h000C00, `N_SLTU, 8'h00, 8'h00, 64'd0);
+    test_intop2(24'h000C10, `N_SLTU, 8'h00, 8'h01, 64'd1);
+    test_intop2(24'h000C20, `N_SLTU, 8'h00, 8'hFE, 64'd1);
+    test_intop2(24'h000C30, `N_SLTU, 8'h00, 8'hFF, 64'd1);
+    test_intop2(24'h000C40, `N_SLTU, 8'h01, 8'h00, 64'd0);
+    test_intop2(24'h000C50, `N_SLTU, 8'h01, 8'h01, 64'd0);
+    test_intop2(24'h000C60, `N_SLTU, 8'h01, 8'hFE, 64'd1);
+    test_intop2(24'h000C70, `N_SLTU, 8'h01, 8'hFF, 64'd1);
+    test_intop2(24'h000C80, `N_SLTU, 8'hFE, 8'h00, 64'd0);
+    test_intop2(24'h000C90, `N_SLTU, 8'hFE, 8'h01, 64'd0);
+    test_intop2(24'h000CA0, `N_SLTU, 8'hFE, 8'hFE, 64'd0);
+    test_intop2(24'h000CB0, `N_SLTU, 8'hFE, 8'hFF, 64'd1);
+    test_intop2(24'h000CC0, `N_SLTU, 8'hFF, 8'h00, 64'd0);
+    test_intop2(24'h000CD0, `N_SLTU, 8'hFF, 8'h01, 64'd0);
+    test_intop2(24'h000CE0, `N_SLTU, 8'hFF, 8'hFE, 64'd0);
+    test_intop2(24'h000CF0, `N_SLTU, 8'hFF, 8'hFF, 64'd0);
+    test_intop2(24'h000D00, `N_SLT,  8'h00, 8'h00, 64'd0);
+    test_intop2(24'h000D10, `N_SLT,  8'h00, 8'h01, 64'd1);
+    test_intop2(24'h000D20, `N_SLT,  8'h00, 8'hFE, 64'd0);
+    test_intop2(24'h000D30, `N_SLT,  8'h00, 8'hFF, 64'd0);
+    test_intop2(24'h000D40, `N_SLT,  8'h01, 8'h00, 64'd0);
+    test_intop2(24'h000D50, `N_SLT,  8'h01, 8'h01, 64'd0);
+    test_intop2(24'h000D60, `N_SLT,  8'h01, 8'hFE, 64'd0);
+    test_intop2(24'h000D70, `N_SLT,  8'h01, 8'hFF, 64'd0);
+    test_intop2(24'h000D80, `N_SLT,  8'hFE, 8'h00, 64'd1);
+    test_intop2(24'h000D90, `N_SLT,  8'hFE, 8'h01, 64'd1);
+    test_intop2(24'h000DA0, `N_SLT,  8'hFE, 8'hFE, 64'd0);
+    test_intop2(24'h000DB0, `N_SLT,  8'hFE, 8'hFF, 64'd1);
+    test_intop2(24'h000DC0, `N_SLT,  8'hFF, 8'h00, 64'd1);
+    test_intop2(24'h000DD0, `N_SLT,  8'hFF, 8'h01, 64'd1);
+    test_intop2(24'h000DE0, `N_SLT,  8'hFF, 8'hFE, 64'd0);
+    test_intop2(24'h000DF0, `N_SLT,  8'hFF, 8'hFF, 64'd0);
+    test_intop2(24'h001C00, `N_SGEU, 8'h00, 8'h00, 64'd1);
+    test_intop2(24'h001C10, `N_SGEU, 8'h00, 8'h01, 64'd0);
+    test_intop2(24'h001C20, `N_SGEU, 8'h00, 8'hFE, 64'd0);
+    test_intop2(24'h001C30, `N_SGEU, 8'h00, 8'hFF, 64'd0);
+    test_intop2(24'h001C40, `N_SGEU, 8'h01, 8'h00, 64'd1);
+    test_intop2(24'h001C50, `N_SGEU, 8'h01, 8'h01, 64'd1);
+    test_intop2(24'h001C60, `N_SGEU, 8'h01, 8'hFE, 64'd0);
+    test_intop2(24'h001C70, `N_SGEU, 8'h01, 8'hFF, 64'd0);
+    test_intop2(24'h001C80, `N_SGEU, 8'hFE, 8'h00, 64'd1);
+    test_intop2(24'h001C90, `N_SGEU, 8'hFE, 8'h01, 64'd1);
+    test_intop2(24'h001CA0, `N_SGEU, 8'hFE, 8'hFE, 64'd1);
+    test_intop2(24'h001CB0, `N_SGEU, 8'hFE, 8'hFF, 64'd0);
+    test_intop2(24'h001CC0, `N_SGEU, 8'hFF, 8'h00, 64'd1);
+    test_intop2(24'h001CD0, `N_SGEU, 8'hFF, 8'h01, 64'd1);
+    test_intop2(24'h001CE0, `N_SGEU, 8'hFF, 8'hFE, 64'd1);
+    test_intop2(24'h001CF0, `N_SGEU, 8'hFF, 8'hFF, 64'd1);
+    test_intop2(24'h001D00, `N_SGE,  8'h00, 8'h00, 64'd1);
+    test_intop2(24'h001D10, `N_SGE,  8'h00, 8'h01, 64'd0);
+    test_intop2(24'h001D20, `N_SGE,  8'h00, 8'hFE, 64'd1);
+    test_intop2(24'h001D30, `N_SGE,  8'h00, 8'hFF, 64'd1);
+    test_intop2(24'h001D40, `N_SGE,  8'h01, 8'h00, 64'd1);
+    test_intop2(24'h001D50, `N_SGE,  8'h01, 8'h01, 64'd1);
+    test_intop2(24'h001D60, `N_SGE,  8'h01, 8'hFE, 64'd1);
+    test_intop2(24'h001D70, `N_SGE,  8'h01, 8'hFF, 64'd1);
+    test_intop2(24'h001D80, `N_SGE,  8'hFE, 8'h00, 64'd0);
+    test_intop2(24'h001D90, `N_SGE,  8'hFE, 8'h01, 64'd0);
+    test_intop2(24'h001DA0, `N_SGE,  8'hFE, 8'hFE, 64'd1);
+    test_intop2(24'h001DB0, `N_SGE,  8'hFE, 8'hFF, 64'd0);
+    test_intop2(24'h001DC0, `N_SGE,  8'hFF, 8'h00, 64'd0);
+    test_intop2(24'h001DD0, `N_SGE,  8'hFF, 8'h01, 64'd0);
+    test_intop2(24'h001DE0, `N_SGE,  8'hFF, 8'hFE, 64'd1);
+    test_intop2(24'h001DF0, `N_SGE,  8'hFF, 8'hFF, 64'd1);
+    test_intop2(24'h000E00, `N_XOR,  8'hAA, 8'hA5, 64'h0000_0000_0000_000F);
+    test_intop2(24'h000F00, `N_SRL,  8'h11, 8'h02, 64'h0000_0000_0000_0004);
+    test_intop2(24'h001000, `N_SRA,  8'h11, 8'h02, 64'h0000_0000_0000_0004);
+    test_intop2(24'h001100, `N_OR,   8'hAA, 8'hA5, 64'hFFFF_FFFF_FFFF_FFAF);
+    test_intop2(24'h001200, `N_AND,  8'hAA, 8'hA5, 64'hFFFF_FFFF_FFFF_FFA0);
+
+    test_intop2(24'h001300, `N_SEQ,  8'h00, 8'h22, 64'd0);
+    test_intop2(24'h001310, `N_SEQ,  8'h00, 8'h00, 64'd1);
+    test_intop2(24'h001320, `N_SNE,  8'h00, 8'h22, 64'd1);
+    test_intop2(24'h001330, `N_SNE,  8'h00, 8'h00, 64'd0);
 
     $display("@I Done.");
     $stop;

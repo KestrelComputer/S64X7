@@ -32,4 +32,6 @@
 `define N_SRA       4'b1001
 `define N_SGE       4'b1010
 `define N_SGEU      4'b1011
+`define N_SEQ       4'b1100
+`define N_SNE       4'b1101
 

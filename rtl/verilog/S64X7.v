@@ -468,6 +468,36 @@ module S64X7(
 	  nz <= $unsigned(y) >= $unsigned(z);
           ndr <= dr >> 4;
         end
+        `N_SEQ: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+	  nz <= y == z;
+          ndr <= dr >> 4;
+        end
+        `N_SNE: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          np <= p;
+          nt <= t+1;
+
+          nx <= x;
+          ny <= x;
+	  nz <= y != z;
+          ndr <= dr >> 4;
+        end
         `N_XOR: begin
           adr_o <= 0;
           cyc_o <= 0;
