@@ -67,7 +67,7 @@ module S64X7(
     output  [7:0]   sel_o,
     output          we_o,
     output          vpa_o,
-    output  [3:0]   opc_o,
+//    output  [3:0]   opc_o,
     output  [63:0]  dat_o
 );
   wire [3:0] opc_o;
@@ -1732,6 +1732,166 @@ module S64X7(
           rpush <= 0;
           rpop <= 0;
           nrz <= rz;
+
+          ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
+        end
+        `N_OVER: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          nia <= ia;
+          np <= p;
+          nt <= t+1;
+
+          dpush <= 1;
+          dpop <= 0;
+          dpop2 <= 0;
+          nx <= y;
+          ny <= z;
+          nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
+          ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
+        end
+        `N_SWAP: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          nia <= ia;
+          np <= p;
+          nt <= t+1;
+
+          dpush <= 0;
+          dpop <= 0;
+          dpop2 <= 0;
+          nx <= x;
+          ny <= z;
+          nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
+          ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
+        end
+        `N_ROT: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          nia <= ia;
+          np <= p;
+          nt <= t+1;
+
+          dpush <= 0;
+          dpop <= 0;
+          dpop2 <= 0;
+          nx <= y;
+          ny <= z;
+          nz <= x;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
+          ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
+        end
+        `N_PUSH: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          nia <= ia;
+          np <= p;
+          nt <= t+1;
+
+          dpush <= 0;
+          dpop <= 1;
+          dpop2 <= 0;
+          nx <= ds0;
+          ny <= x;
+          nz <= y;
+
+          rpush <= 1;
+          rpop <= 0;
+          nrz <= z;
+
+          ndr <= dr >> 4;
+
+          cflag_1 <= 0;
+          sum_en <= 0;
+          and_en <= 0;
+          xor_en <= 0;
+          invB_en <= 0;
+          lsh_en <= 0;
+          rsh_en <= 0;
+        end
+        `N_POP: begin
+          adr_o <= 0;
+          cyc_o <= 0;
+          we_o <= 0;
+          vpa_o <= 0;
+          sel_o <= 0;
+
+          nia <= ia;
+          np <= p;
+          nt <= t+1;
+
+          dpush <= 1;
+          dpop <= 0;
+          dpop2 <= 0;
+          nx <= y;
+          ny <= z;
+          nz <= rz;
+
+          rpush <= 0;
+          rpop <= 1;
+          nrz <= rs0;
 
           ndr <= dr >> 4;
 

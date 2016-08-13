@@ -585,7 +585,10 @@ module test_S64X7();
     //  LIT8  0
     //  SDM
 
-    test_stackop(24'h006000, `N_DUP, 3, 3, 2);
+    test_stackop(24'h006100, `N_DUP, 3, 3, 2);
+    test_stackop(24'h006200, `N_OVER, 2, 3, 2);
+    test_stackop(24'h006300, `N_SWAP, 2, 3, 1);
+    test_stackop(24'h006400, `N_ROT, 1, 3, 2);
 
     $display("@I Done.");
     $stop;
