@@ -511,6 +511,27 @@ module test_S64X7();
     test_ji(24'h004200, `N_JI,     16'h4020, 64'h0000_0000_0000_0048);
     test_ji(24'h004300, `N_CALLI,  16'h4020, 64'h0000_0000_0000_0048);
 
+    // CALL8	*+8
+		// RET
+
+    start(24'h005000);
+    reset_o <= 1;
+    tick();
+    reset_o <= 0;
+    dat_o <= 64'h2700_0000_0000_0103;
+    tick();             // Now executing CALL8
+    assert_opcode(`OPC_JUMPS);
+    assert_cyc_o(0);
+    assert_vpa_o(0);
+
+    test_instr_fetch(24'h005000, 64'hE000_0000_0000_0080);
+
+    start(24'h005004);
+    dat_o <= 64'h2800_0000_0000_0000;
+    tick();
+
+    test_instr_fetch(24'h005004, 64'hE000_0000_0000_0008);
+
     $display("@I Done.");
     $stop;
   end

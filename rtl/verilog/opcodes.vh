@@ -6,6 +6,7 @@
 `define OPC_LOADS   4'b0101
 `define OPC_INTOPS  4'b0110
 `define OPC_JUMPS   4'b0111
+`define OPC_RET     4'b1000
 
 `define N_SBM       4'b0000
 `define N_SHM       4'b0001

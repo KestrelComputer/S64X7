@@ -2,6 +2,79 @@
 
 `include "opcodes.vh"
 
+
+module stack8(
+    input           clk_i,
+    input           push_en_i,
+    input           pop_en_i,
+    input           pop2_en_i,
+    input   [63:0]  dat_i,
+
+    output  [63:0]  dat0_o,
+    output  [63:0]  dat1_o
+);
+  reg [63:0] a, b, c, d, e, f, g, h;
+  reg [63:0] na, nb, nc, nd, ne, nf, ng, nh;
+
+  assign dat0_o = a;
+  assign dat1_o = b;
+
+  always @(*) begin
+    if(push_en_i) begin
+      na <= dat_i;
+      nb <= a;
+      nc <= b;
+      nd <= c;
+      ne <= d;
+      nf <= e;
+      ng <= f;
+      nh <= g;
+    end
+    else if(pop_en_i) begin
+      na <= b;
+      nb <= c;
+      nc <= d;
+      nd <= e;
+      ne <= f;
+      nf <= g;
+      ng <= h;
+      nh <= h;
+    end
+    else if(pop2_en_i) begin
+      na <= c;
+      nb <= d;
+      nc <= e;
+      nd <= f;
+      ne <= g;
+      nf <= h;
+      ng <= h;
+      nh <= h;
+    end
+    else begin
+      na <= a;
+      nb <= b;
+      nc <= c;
+      nd <= d;
+      ne <= e;
+      nf <= f;
+      ng <= g;
+      nh <= h;
+    end
+  end
+
+  always @(posedge clk_i) begin
+    a <= na;
+    b <= nb;
+    c <= nc;
+    d <= nd;
+    e <= ne;
+    f <= nf;
+    g <= ng;
+    h <= nh;
+  end
+endmodule
+
+
 module S64X7(
     input         clk_i,
     input         reset_i,
@@ -23,10 +96,37 @@ module S64X7(
   reg [63:0]  dat_o;
 
   reg [63:0]  ir, dr, ndr;
-  reg [63:3]  p, np;	// Pointer to next instruction packet
+  reg [63:3]  p, np;  // Pointer to next instruction packet
   reg [63:3]  ia, nia;  // Pointer to current instruction packet
   reg [3:0]   t, nt;
   reg [63:0]  x, y, z, nx, ny, nz;
+
+  reg dpush, dpop, dpop2;
+  wire [63:0] ds0, ds1;
+
+  stack8 ds(
+    .clk_i(clk_i),
+    .push_en_i(dpush),
+    .pop_en_i(dpop),
+    .pop2_en_i(dpop2),
+    .dat_i(x),
+    .dat0_o(ds0),
+    .dat1_o(ds1)
+  );
+
+  reg           rpush, rpop;
+  reg   [63:0]  rz, nrz;
+  wire  [63:0] rs0;
+
+  stack8 rs(
+    .clk_i(clk_i),
+    .push_en_i(rpush),
+    .pop_en_i(rpop),
+    .pop2_en_i(1'b0),
+    .dat_i(rz),
+    .dat0_o(rs0)
+    // .dat1_o(rs1) unused
+  );
 
   wire [7:0] byte_in =
     (z[2:0] == 3'b000) ? dat_i[7:0] :
@@ -78,9 +178,17 @@ module S64X7(
       np <= 61'h1C00_0000_0000_0000; // 64'hE000_0000_0000_0000
       nt <= 0;
 
+      dpush <= 0;
+      dpop <= 0;
+      dpop2 <= 0;
       nx <= x;
       ny <= y;
       nz <= z;
+
+      rpush <= 0;
+      rpop <= 0;
+      nrz <= rz;
+
       ndr <= dr;
     end
     2'b01: begin
@@ -95,9 +203,16 @@ module S64X7(
       np <= p + 1;
       nt <= 1;
 
+      dpush <= 0;
+      dpop <= 0;
       nx <= x;
       ny <= y;
       nz <= z;
+
+      rpush <= 0;
+      rpop <= 0;
+      nrz <= rz;
+
       ndr <= dr;
     end
     2'b00: begin
@@ -114,9 +229,16 @@ module S64X7(
         np <= p;
         nt <= t+1;
 
+        dpush <= 0;
+        dpop <= 0;
         nx <= x;
         ny <= y;
         nz <= z;
+
+        rpush <= 0;
+        rpop <= 0;
+        nrz <= rz;
+
         ndr <= dr;
       end
 
@@ -132,9 +254,16 @@ module S64X7(
         np <= p;
         nt <= t+1;
 
+        dpush <= 1;
+        dpop <= 0;
         nx <= y;
         ny <= z;
         nz <= {{56{dr[7]}}, dr[7:0]};
+
+        rpush <= 0;
+        rpop <= 0;
+        nrz <= rz;
+
         ndr <= dr >> 8;
       end
 
@@ -150,9 +279,16 @@ module S64X7(
         np <= p;
         nt <= t+1;
 
+        dpush <= 1;
+        dpop <= 0;
         nx <= y;
         ny <= z;
         nz <= {{48{dr[15]}}, dr[15:0]};
+
+        rpush <= 0;
+        rpop <= 0;
+        nrz <= rz;
+
         ndr <= dr >> 16;
       end
 
@@ -168,9 +304,16 @@ module S64X7(
         np <= p;
         nt <= t+1;
 
+        dpush <= 1;
+        dpop <= 0;
         nx <= y;
         ny <= z;
         nz <= {{32{dr[31]}}, dr[31:0]};
+
+        rpush <= 0;
+        rpop <= 0;
+        nrz <= rz;
+
         ndr <= dr >> 32;
       end
 
@@ -188,9 +331,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
-          ny <= x;
+          dpush <= 0;
+          dpop <= 0;
+          nx <= ds1;
+          ny <= ds0;
           nz <= x;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SHM: begin
@@ -205,9 +355,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
-          ny <= x;
+          dpush <= 0;
+          dpop <= 0;
+          nx <= ds1;
+          ny <= ds0;
           nz <= x;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SWM: begin
@@ -222,9 +379,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
-          ny <= x;
+          dpush <= 0;
+          dpop <= 0;
+          nx <= ds1;
+          ny <= ds0;
           nz <= x;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SDM: begin
@@ -239,9 +403,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
-          ny <= x;
+          dpush <= 0;
+          dpop <= 0;
+          nx <= ds1;
+          ny <= ds0;
           nz <= x;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         endcase
@@ -260,9 +431,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
+          dpush <= 0;
+          dpop <= 0;
           nx <= x;
           ny <= y;
           nz <= {56'd0, byte_in};
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_LHMU: begin
@@ -276,9 +454,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
+          dpush <= 0;
+          dpop <= 0;
           nx <= x;
           ny <= y;
           nz <= {48'd0, hword_in};
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_LWMU: begin
@@ -292,9 +477,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
+          dpush <= 0;
+          dpop <= 0;
           nx <= x;
           ny <= y;
           nz <= {32'd0, word_in};
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_LDMU: begin
@@ -308,9 +500,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
+          dpush <= 0;
+          dpop <= 0;
           nx <= x;
           ny <= y;
           nz <= dat_i;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_LBMS: begin
@@ -324,9 +523,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
+          dpush <= 0;
+          dpop <= 0;
           nx <= x;
           ny <= y;
           nz <= {{56{byte_in[7]}}, byte_in};
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_LHMS: begin
@@ -340,9 +546,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
+          dpush <= 0;
+          dpop <= 0;
           nx <= x;
           ny <= y;
           nz <= {{48{hword_in[15]}}, hword_in};
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_LWMS: begin
@@ -356,9 +569,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
+          dpush <= 0;
+          dpop <= 0;
           nx <= x;
           ny <= y;
           nz <= {{32{word_in[31]}}, word_in};
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_LDMS: begin
@@ -372,9 +592,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
+          dpush <= 0;
+          dpop <= 0;
           nx <= x;
           ny <= y;
           nz <= dat_i;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         endcase
@@ -393,9 +620,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y + z;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SUB: begin
@@ -409,9 +643,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y - z;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SLL: begin
@@ -425,9 +666,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y << z;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SLT: begin
@@ -441,9 +689,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= $signed(y) < $signed(z);
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SLTU: begin
@@ -457,9 +712,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= $unsigned(y) < $unsigned(z);
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SGE: begin
@@ -473,9 +735,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= $signed(y) >= $signed(z);
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SGEU: begin
@@ -489,9 +758,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= $unsigned(y) >= $unsigned(z);
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SEQ: begin
@@ -505,9 +781,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y == z;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SNE: begin
@@ -521,9 +804,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y != z;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_XOR: begin
@@ -537,9 +827,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y ^ z;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SRL: begin
@@ -553,9 +850,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= $unsigned(y) >> $unsigned(z);
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_SRA: begin
@@ -569,9 +873,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= $signed(y) >> $signed(z);
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_OR: begin
@@ -585,9 +896,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y | z;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_AND: begin
@@ -601,9 +919,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y & z;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_BIC: begin
@@ -617,9 +942,16 @@ module S64X7(
           np <= p;
           nt <= t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y & ~z;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         endcase
@@ -638,9 +970,16 @@ module S64X7(
           np <= (|z) ? ia + dr[11:4] : p;
           nt <= (|z) ? 0 : t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 12;
         end
         `N_JF8: begin
@@ -654,9 +993,16 @@ module S64X7(
           np <= (|z) ? p : ia + dr[11:4];
           nt <= (|z) ? t+1 : 0;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 12;
         end
         `N_J8: begin
@@ -670,9 +1016,16 @@ module S64X7(
           np <= ia + dr[11:4];
           nt <= 0;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 12;
         end
         `N_CALL8: begin
@@ -686,9 +1039,16 @@ module S64X7(
           np <= ia + dr[11:4];
           nt <= 0;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y;
+
+          rpush <= 1;
+          rpop <= 0;
+          nrz <= {p, 3'b000};
+
           ndr <= dr >> 12;
         end
         `N_JT16: begin
@@ -702,9 +1062,16 @@ module S64X7(
           np <= (|z) ? ia + dr[19:4] : p;
           nt <= (|z) ? 0 : t+1;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 20;
         end
         `N_JF16: begin
@@ -718,9 +1085,16 @@ module S64X7(
           np <= (|z) ? p : ia + dr[19:4];
           nt <= (|z) ? t+1 : 0;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 20;
         end
         `N_J16: begin
@@ -734,9 +1108,16 @@ module S64X7(
           np <= ia + dr[19:4];
           nt <= 0;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 20;
         end
         `N_CALL16: begin
@@ -750,9 +1131,16 @@ module S64X7(
           np <= ia + dr[19:4];
           nt <= 0;
 
-          nx <= x;
+          dpush <= 0;
+          dpop <= 1;
+          nx <= ds0;
           ny <= x;
           nz <= y;
+
+          rpush <= 1;
+          rpop <= 0;
+          nrz <= {p, 3'b000};
+
           ndr <= dr >> 20;
         end
         `N_JTI: begin
@@ -766,9 +1154,16 @@ module S64X7(
           np <= (|y) ? z[63:3] : p;
           nt <= (|y) ? 0 : t+1;
 
-          nx <= x;
-          ny <= x;
+          dpush <= 0;
+          dpop <= 0;
+          nx <= ds1;
+          ny <= ds0;
           nz <= x;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_JFI: begin
@@ -782,9 +1177,16 @@ module S64X7(
           np <= (|y) ? p : z[63:3];
           nt <= (|y) ? t+1 : 0;
 
-          nx <= x;
-          ny <= x;
+          dpush <= 0;
+          dpop <= 0;
+          nx <= ds1;
+          ny <= ds0;
           nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_JI: begin
@@ -798,9 +1200,16 @@ module S64X7(
           np <= z[63:3];
           nt <= 0;
 
-          nx <= x;
-          ny <= x;
+          dpush <= 0;
+          dpop <= 0;
+          nx <= ds1;
+          ny <= ds0;
           nz <= y;
+
+          rpush <= 0;
+          rpop <= 0;
+          nrz <= rz;
+
           ndr <= dr >> 4;
         end
         `N_CALLI: begin
@@ -814,12 +1223,44 @@ module S64X7(
           np <= z[63:3];
           nt <= 0;
 
-          nx <= x;
-          ny <= x;
+          dpush <= 0;
+          dpop <= 0;
+          nx <= ds1;
+          ny <= ds0;
           nz <= y;
+
+          rpush <= 1;
+          rpop <= 0;
+          nrz <= {p, 3'b000};
+
           ndr <= dr >> 4;
         end
         endcase
+      end
+
+      `OPC_RET: begin
+        adr_o <= 0;
+        cyc_o <= 0;
+        we_o <= 0;
+        vpa_o <= 0;
+        sel_o <= 0;
+
+        nia <= ia;
+        np <= rz[63:3];
+        nt <= 0;
+
+        dpush <= 0;
+        dpop <= 0;
+        dpop2 <= 0;
+        nx <= x;
+        ny <= y;
+        nz <= z;
+
+        rpush <= 0;
+        rpop <= 1;
+        nrz <= rs0;
+
+        ndr <= dr;
       end
 
       default: begin
@@ -833,9 +1274,16 @@ module S64X7(
         np <= p;
         nt <= t+1;
 
+        dpush <= 0;
+        dpop <= 0;
         nx <= x;
         ny <= y;
         nz <= z;
+
+        rpush <= 0;
+        rpop <= 0;
+        nrz <= rz;
+
         ndr <= dr;
       end
       endcase
@@ -859,5 +1307,6 @@ module S64X7(
     x <= nx;
     y <= ny;
     z <= nz;
+    rz <= nrz;
   end
 endmodule
