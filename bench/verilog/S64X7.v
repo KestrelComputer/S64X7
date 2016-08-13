@@ -259,6 +259,72 @@ module test_S64X7();
   end
   endtask
 
+  task test_j;
+  input [23:0] story;
+  input [3:0] fn;
+  input [15:0] displacement;
+  input [63:0] expected;
+  begin
+    start(story);
+    reset_o <= 1;
+    tick();
+    reset_o <= 0;
+    dat_o <= {28'h4117_000, displacement, fn, 16'h0148};
+    tick();             // Now executing LIT8
+    assert_opcode(`OPC_LIT8);
+    assert_cyc_o(0);
+    assert_vpa_o(0);
+
+    start(story+1);  // Now executing LIT8
+    tick();
+    assert_opcode(`OPC_LIT8);
+    assert_cyc_o(0);
+    assert_vpa_o(0);
+
+    start(story+2);  // Now jump instruction
+    tick();
+    assert_opcode(`OPC_JUMPS);
+    assert_cyc_o(0);
+    assert_vpa_o(0);
+
+    test_instr_fetch(story+3, expected);
+  end
+  endtask
+
+  // Y is the flag, Z is the target address.  Thus, we need to swap
+  // the two LIT8 instructions for this to work right.
+  task test_ji;
+  input [23:0] story;
+  input [3:0] fn;
+  input [15:0] displacement;
+  input [63:0] expected;
+  begin
+    start(story);
+    reset_o <= 1;
+    tick();
+    reset_o <= 0;
+    dat_o <= {28'h4117_000, displacement, fn, 16'h4801};
+    tick();             // Now executing LIT8
+    assert_opcode(`OPC_LIT8);
+    assert_cyc_o(0);
+    assert_vpa_o(0);
+
+    start(story+1);  // Now executing LIT8
+    tick();
+    assert_opcode(`OPC_LIT8);
+    assert_cyc_o(0);
+    assert_vpa_o(0);
+
+    start(story+2);  // Now jump instruction
+    tick();
+    assert_opcode(`OPC_JUMPS);
+    assert_cyc_o(0);
+    assert_vpa_o(0);
+
+    test_instr_fetch(story+3, expected);
+  end
+  endtask
+
   task test_instr_fetch;
   input [23:0] story;
   input [63:0] expected;
@@ -420,11 +486,30 @@ module test_S64X7();
     test_intop2(24'h001000, `N_SRA,  8'h11, 8'h02, 64'h0000_0000_0000_0004);
     test_intop2(24'h001100, `N_OR,   8'hAA, 8'hA5, 64'hFFFF_FFFF_FFFF_FFAF);
     test_intop2(24'h001200, `N_AND,  8'hAA, 8'hA5, 64'hFFFF_FFFF_FFFF_FFA0);
-
     test_intop2(24'h001300, `N_SEQ,  8'h00, 8'h22, 64'd0);
     test_intop2(24'h001310, `N_SEQ,  8'h00, 8'h00, 64'd1);
     test_intop2(24'h001320, `N_SNE,  8'h00, 8'h22, 64'd1);
     test_intop2(24'h001330, `N_SNE,  8'h00, 8'h00, 64'd0);
+    test_intop2(24'h001400, `N_BIC,  8'hAA, 8'hA5, 64'h0000_0000_0000_000A);
+
+    // LIT8   $48
+    // LIT8   $01
+    // JT8/JT16/JTI/JF8/JF16/JFI/J8/J16/JI/CALL8/CALL16/CALLI
+
+    test_j(24'h002000, `N_JT8,    16'h4020, 64'hE000_0000_0000_0100);
+    test_j(24'h002100, `N_JF8,    16'h4020, 64'hE000_0000_0000_0008);
+    test_j(24'h002200, `N_J8,     16'h4020, 64'hE000_0000_0000_0100);
+    test_j(24'h002300, `N_CALL8,  16'h4020, 64'hE000_0000_0000_0100);
+
+    test_j(24'h003000, `N_JT16,   16'h4020, 64'hE000_0000_0002_0100);
+    test_j(24'h003100, `N_JF16,   16'h4020, 64'hE000_0000_0000_0008);
+    test_j(24'h003200, `N_J16,    16'h4020, 64'hE000_0000_0002_0100);
+    test_j(24'h003300, `N_CALL16, 16'h4020, 64'hE000_0000_0002_0100);
+
+    test_ji(24'h004000, `N_JTI,    16'h4020, 64'h0000_0000_0000_0048);
+    test_ji(24'h004100, `N_JFI,    16'h4020, 64'hE000_0000_0000_0008);
+    test_ji(24'h004200, `N_JI,     16'h4020, 64'h0000_0000_0000_0048);
+    test_ji(24'h004300, `N_CALLI,  16'h4020, 64'h0000_0000_0000_0048);
 
     $display("@I Done.");
     $stop;

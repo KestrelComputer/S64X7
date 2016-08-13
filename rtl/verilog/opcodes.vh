@@ -5,6 +5,7 @@
 `define OPC_STORES  4'b0100
 `define OPC_LOADS   4'b0101
 `define OPC_INTOPS  4'b0110
+`define OPC_JUMPS   4'b0111
 
 `define N_SBM       4'b0000
 `define N_SHM       4'b0001
@@ -34,4 +35,18 @@
 `define N_SGEU      4'b1011
 `define N_SEQ       4'b1100
 `define N_SNE       4'b1101
+`define N_BIC       4'b1110
+
+`define N_JT8       4'b0000
+`define N_JF8       4'b0001
+`define N_J8        4'b0010
+`define N_CALL8     4'b0011
+`define N_JT16      4'b0100
+`define N_JF16      4'b0101
+`define N_J16       4'b0110
+`define N_CALL16    4'b0111
+`define N_JTI       4'b1100
+`define N_JFI       4'b1101
+`define N_JI        4'b1110
+`define N_CALLI     4'b1111
 
